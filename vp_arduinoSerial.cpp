@@ -101,12 +101,12 @@ void VPort_ArduinoSerial::send(uint8_t* data, uint16_t len){
   // double guard?
   if(!cts()) return;
   // setup, 
-  outAwaiting[0] = len + 4;               // pck[0] is checksum = len + checksum + cobs start + cobs delimit + ack/pack + id 
+  outAwaiting[0] = len + 5;               // pck[0] is checksum = len + checksum + cobs start + cobs delimit + ack/pack + id 
   outAwaiting[1] = SERLINK_KEY_PCK;       // this ones a packet m8 
   outAwaitingId ++; if(outAwaitingId == 0) outAwaitingId = 1;
   outAwaiting[2] = outAwaitingId;         // an id     
   cobsEncode(data, len, &(outAwaiting[3]));  // encode 
-  outAwaiting[len + 3] = 0;               // stuff delimiter, 
+  outAwaiting[len + 4] = 0;               // stuff delimiter, 
   outAwaitingLen = outAwaiting[0];        // track... 
   // transmit attempts etc 
   outAwaitingNTA = 0;
