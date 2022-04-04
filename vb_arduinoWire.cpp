@@ -49,6 +49,8 @@ void VBus_ArduinoWire::send(uint8_t* data, uint16_t len, uint8_t rxAddr){
   digitalWrite(A1, HIGH);
   // this'll be the big hangup, 
   if(len > 32) return;
+  // this might guard, if we are already rx'ing... 
+  if(wire->available()) return;
   // become host, 
   wire->end();
   wire->begin();
@@ -60,7 +62,8 @@ void VBus_ArduinoWire::send(uint8_t* data, uint16_t len, uint8_t rxAddr){
   wire->end();
   wire->begin(ownRxAddr);
   // check, 
-  if(res != 0) ERROR(2, "res " + String(res));
+  //if(res != 0) 
+  DEBUG("res " + String(res) + " txd " + String(len));
   digitalWrite(A1, LOW);
 }
 
