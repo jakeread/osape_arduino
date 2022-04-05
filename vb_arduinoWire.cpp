@@ -63,7 +63,7 @@ void VBus_ArduinoWire::send(uint8_t* data, uint16_t len, uint8_t rxAddr){
   wire->begin(ownRxAddr);
   // check, 
   //if(res != 0) 
-  DEBUG("res " + String(res) + " txd " + String(len));
+  // DEBUG("res " + String(res) + " txd " + String(len));
   digitalWrite(A1, LOW);
 }
 
