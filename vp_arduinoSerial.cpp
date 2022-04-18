@@ -56,7 +56,7 @@ void VPort_ArduinoSerial::loop(void){
     if(rxBuffer[rxBufferWp - 1] == 0){
       // 1st, we checksum:
       if(rxBuffer[0] != rxBufferWp){ 
-        ERROR(3, "serLink bad checksum, cs: " + String(rxBuffer[0]) + " wp: " + String(rxBufferWp + 1));
+        ERROR(3, "serLink bad checksum, cs: " + String(rxBuffer[0]) + " wp: " + String(rxBufferWp));
       } else {
         // acks, packs, or broken things 
         if(rxBuffer[1] == SERLINK_KEY_PCK){
