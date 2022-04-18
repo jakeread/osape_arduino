@@ -12,6 +12,10 @@ projects. Copyright is retained and must be preserved. The work is provided as
 is; no warranty is provided, and users accept all liability.
 */
 
+#include "../osap_config.h"
+
+#ifdef INCLUDE_WIRE_VPORT
+
 #include "vb_arduinoWire.h"
 #include "../osap_debug.h"
 
@@ -70,3 +74,5 @@ void VBus_ArduinoWire::send(uint8_t* data, uint16_t len, uint8_t rxAddr){
 boolean VBus_ArduinoWire::cts(uint8_t rxAddr){
   return true;
 }
+
+#endif 

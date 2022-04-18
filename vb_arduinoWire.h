@@ -12,6 +12,10 @@ projects. Copyright is retained and must be preserved. The work is provided as
 is; no warranty is provided, and users accept all liability.
 */
 
+#include "../osap_config.h"
+
+#ifdef INCLUDE_WIRE_VPORT
+
 #ifndef ARDU_WIRELINK_H_
 #define ARDU_WIRELINK_H_
 
@@ -35,4 +39,5 @@ class VBus_ArduinoWire : public VBus {
     VBus_ArduinoWire(Vertex* _parent, String _name, TwoWire* _wire, uint8_t _ownRxAddr);
 };
 
+#endif 
 #endif 
