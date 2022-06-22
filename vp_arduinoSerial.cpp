@@ -14,7 +14,7 @@ is; no warranty is provided, and users accept all liability.
 
 #include "vp_arduinoSerial.h"
 #include "./osape/utils/cobs.h"
-#include "./osap_debug.h"
+#include "../osape/core/osap.h"
 
 VPort_ArduinoSerial::VPort_ArduinoSerial( Vertex* _parent, String _name, Uart* _uart
 ) : VPort ( _parent, _name ){
@@ -56,7 +56,7 @@ void VPort_ArduinoSerial::loop(void){
     if(rxBuffer[rxBufferWp - 1] == 0){
       // 1st, we checksum:
       if(rxBuffer[0] != rxBufferWp){ 
-        ERROR(3, "serLink bad checksum, cs: " + String(rxBuffer[0]) + " wp: " + String(rxBufferWp));
+        OSAP::error("serLink bad checksum, cs: " + String(rxBuffer[0]) + " wp: " + String(rxBufferWp), MINOR);
       } else {
         // acks, packs, or broken things 
         if(rxBuffer[1] == SERLINK_KEY_PCK){
@@ -65,7 +65,7 @@ void VPort_ArduinoSerial::loop(void){
             inAwaitingId = rxBuffer[2]; // stash ID 
             inAwaitingLen = cobsDecode(&(rxBuffer[3]), rxBufferWp - 2, inAwaiting); // fill inAwaiting 
           } else {
-            ERROR(3, "serLink double rx");
+            OSAP::error("serLink double rx", MINOR);
           }
         } else if (rxBuffer[1] == SERLINK_KEY_ACK){
           if(rxBuffer[2] == outAwaitingId){

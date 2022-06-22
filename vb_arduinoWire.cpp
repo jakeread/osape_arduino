@@ -17,7 +17,6 @@ is; no warranty is provided, and users accept all liability.
 #ifdef INCLUDE_WIRE_VPORT
 
 #include "vb_arduinoWire.h"
-#include "../osap_debug.h"
 
 // static stash: same per instance, 
 uint8_t stash[32];
