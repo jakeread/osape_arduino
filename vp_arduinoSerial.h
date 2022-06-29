@@ -25,9 +25,12 @@ is; no warranty is provided, and users accept all liability.
 // packet keys; 
 #define SERLINK_KEY_PCK 170  // 0b10101010
 #define SERLINK_KEY_ACK 171  // 0b10101011
+#define SERLINK_KEY_KEEPALIVE 173 
 // retry settings 
 #define SERLINK_RETRY_MACOUNT 2
-#define SERLINK_RETRY_TIME 10000  // microseconds 
+#define SERLINK_RETRY_TIME 20000  // microseconds 
+#define SERLINK_KEEPALIVE_TX_TIME 800 // milliseconds 
+#define SERLINK_KEEPALIVE_RX_TIME 1200 // ms 
 
 #define SERLINK_LIGHT_ON_TIME 100 // in ms 
 
@@ -44,6 +47,7 @@ class VPort_ArduinoSerial : public VPort {
     void checkOutputStates(void);
     void send(uint8_t* data, uint16_t len) override;
     boolean cts(void) override;
+    boolean isOpen(void) override;
     // -------------------------------- Data 
     // Uart & USB are both Stream classes, 
     Stream* stream;
@@ -53,6 +57,10 @@ class VPort_ArduinoSerial : public VPort {
     // incoming, always kept clear to receive: 
     uint8_t rxBuffer[SERLINK_BUFSIZE];
     uint8_t rxBufferWp = 0;
+    // keepalive state, 
+    uint32_t lastRxTime = 0;
+    uint32_t lastTxTime = 0;
+    uint8_t keepAlivePacket[3] = {3, SERLINK_KEY_KEEPALIVE, 0};
     // guard on double transmits 
     uint8_t lastIdRxd = 0;
     // incoming stash

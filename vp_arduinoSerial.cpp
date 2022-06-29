@@ -54,26 +54,34 @@ void VPort_ArduinoSerial::loop(void){
     // read byte into the current stub, 
     rxBuffer[rxBufferWp ++] = stream->read();
     if(rxBuffer[rxBufferWp - 1] == 0){
+      // always reset keepalive last-rx time, 
+      lastRxTime = millis();
       // 1st, we checksum:
       if(rxBuffer[0] != rxBufferWp){ 
         OSAP::error("serLink bad checksum, cs: " + String(rxBuffer[0]) + " wp: " + String(rxBufferWp), MINOR);
       } else {
         // acks, packs, or broken things 
-        if(rxBuffer[1] == SERLINK_KEY_PCK){
-          // dirty guard for retransmitted packets, 
-          if(rxBuffer[2] != lastIdRxd){
-            inAwaitingId = rxBuffer[2]; // stash ID 
-            inAwaitingLen = cobsDecode(&(rxBuffer[3]), rxBufferWp - 2, inAwaiting); // fill inAwaiting 
-          } else {
-            OSAP::error("serLink double rx", MINOR);
-          }
-        } else if (rxBuffer[1] == SERLINK_KEY_ACK){
-          if(rxBuffer[2] == outAwaitingId){
-            // clear now, 
-            outAwaitingLen = 0;
-          }
-        } else {
-          // a bonkers, broken to shit packet 
+        switch(rxBuffer[1]){
+          case SERLINK_KEY_PCK:
+            // dirty guard for retransmitted packets, 
+            if(rxBuffer[2] != lastIdRxd){
+              inAwaitingId = rxBuffer[2]; // stash ID 
+              inAwaitingLen = cobsDecode(&(rxBuffer[3]), rxBufferWp - 2, inAwaiting); // fill inAwaiting 
+            } else {
+              OSAP::error("serLink double rx", MINOR);
+            }
+            break;
+          case SERLINK_KEY_ACK:
+            if(rxBuffer[2] == outAwaitingId){
+              outAwaitingLen = 0;
+            }
+            break;
+          case SERLINK_KEY_KEEPALIVE:
+            // noop, 
+            break;
+          default:
+            // makes no sense, 
+            break;
         }
       }
       // always reset on delimiter, 
@@ -120,21 +128,25 @@ boolean VPort_ArduinoSerial::cts(void){
   return (outAwaitingLen == 0);
 }
 
+// we are open if we've heard back lately, 
+boolean VPort_ArduinoSerial::isOpen(void){
+  return (millis() - lastRxTime < SERLINK_KEEPALIVE_RX_TIME);
+}
+
 void VPort_ArduinoSerial::checkOutputStates(void){
-  // can we ack? no real acks for now, 
-  if(ackIsAwaiting && txBufferLen == 0){
+  if(ackIsAwaiting && txBufferLen == 0){   // can we ack? 
     memcpy(txBuffer, ackAwaiting, 4);
     txBufferLen = 4;
+    lastTxTime = millis();
     txBufferRp = 0;
     ackIsAwaiting = false;
-  }
-  // would we be clear to tx ? 
-  if(outAwaitingLen > 0 && txBufferLen == 0){
+  } else if(outAwaitingLen > 0 && txBufferLen == 0){   // would we be clear to tx ? 
     // check retransmit cases, 
     if(outAwaitingLTAT == 0 || outAwaitingLTAT + SERLINK_RETRY_TIME < micros()){
       memcpy(txBuffer, outAwaiting, outAwaitingLen);
       outAwaitingLTAT = micros();
       txBufferLen = outAwaitingLen;
+      lastTxTime = millis();
       txBufferRp = 0;
       outAwaitingNTA ++;
     } 
@@ -142,6 +154,11 @@ void VPort_ArduinoSerial::checkOutputStates(void){
     if(outAwaitingNTA >= SERLINK_RETRY_MACOUNT){
       outAwaitingLen = 0;
     }
+  } else if (millis() - lastTxTime > SERLINK_KEEPALIVE_TX_TIME && txBufferLen == 0){
+    OSAP::debug("keepalive-ing " + name + " " + String(isOpen()));
+    memcpy(txBuffer, keepAlivePacket, 3);
+    txBufferLen = 3;
+    lastTxTime = millis();
   }
   // finally, we write out so long as we can: 
   // we aren't guaranteed to get whole pckts out in each fn call 
