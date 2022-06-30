@@ -155,7 +155,7 @@ void VPort_ArduinoSerial::checkOutputStates(void){
       outAwaitingLen = 0;
     }
   } else if (millis() - lastTxTime > SERLINK_KEEPALIVE_TX_TIME && txBufferLen == 0){
-    OSAP::debug("keepalive-ing " + name + " " + String(isOpen()));
+    //OSAP::debug("keepalive-ing " + name + " " + String(isOpen()));
     memcpy(txBuffer, keepAlivePacket, 3);
     txBufferLen = 3;
     lastTxTime = millis();
