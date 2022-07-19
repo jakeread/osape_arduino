@@ -28,7 +28,7 @@ is; no warranty is provided, and users accept all liability.
 #define SERLINK_KEY_KEEPALIVE 173 
 // retry settings 
 #define SERLINK_RETRY_MACOUNT 2
-#define SERLINK_RETRY_TIME 20000  // microseconds 
+#define SERLINK_RETRY_TIME 100000  // microseconds 
 #define SERLINK_KEEPALIVE_TX_TIME 800 // milliseconds 
 #define SERLINK_KEEPALIVE_RX_TIME 1200 // ms 
 
